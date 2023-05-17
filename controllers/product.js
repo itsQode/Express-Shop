@@ -1,8 +1,55 @@
 const { Product } = require('../models/product');
+const { Category } = require('../models/category');
+const mongoose = require('mongoose');
 
 class ProductContorller {
+  static async createProduct(req, res, next) {
+    const category = await Category.findById(req.body.category);
+
+    if (!category)
+      return res.status(404).json({
+        error: 'Invalid category',
+        success: false,
+        body: null,
+      });
+
+    let product = new Product({
+      name: req.body.name,
+      description: req.body.description,
+      richDescription: req.body.richDescription,
+      image: req.body.image,
+      brand: req.body.brand,
+      price: req.body.price,
+      category: req.body.category,
+      countInStock: req.body.countInStock,
+      rating: req.body.rating,
+      numReviews: req.body.numReviews,
+      isFeatured: req.body.isFeatured,
+    });
+
+    product = await product.save();
+
+    if (!product)
+      return res.status(500).json({
+        error: 'The product cannot be created',
+        success: false,
+        body: null,
+      });
+
+    return res.status(201).json({
+      error: null,
+      success: true,
+      body: product,
+    });
+  }
+
   static async getAllProduct(req, res, next) {
-    const productList = await Product.find();
+    let filter = {};
+    if (req.query.categories) {
+      filter = { category: req.query.categories.split(',') };
+      console.log(filter);
+    }
+    const productList = await Product.find(filter).populate('category');
 
     if (!productList) {
       return res.status(500).json({
@@ -19,29 +66,163 @@ class ProductContorller {
     });
   }
 
-  static async createProduct(req, res, next) {
-    const product = new Product({
-      name: req.body.name,
-      image: req.body.image,
-      countInStock: req.body.countInStock,
-    });
+  static async getProductById(req, res, next) {
+    const id = req.params.id;
+    if (!id) return;
 
-    product
-      .save()
-      .then((createdProduct) => {
-        return res.status(201).json({
-          error: null,
-          success: true,
-          body: createdProduct,
-        });
-      })
-      .catch((error) => {
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid product id',
+        success: false,
+        body: null,
+      });
+
+    try {
+      const product = await Product.findById(id).populate('category');
+
+      if (!product)
         return res.status(500).json({
-          error,
+          error: 'cant fetch product',
           success: false,
           body: null,
         });
+
+      return res.status(200).json({
+        error: null,
+        success: true,
+        body: product,
       });
+    } catch (error) {
+      return res.status(500).json({
+        error,
+        success: false,
+        body: null,
+      });
+    }
+  }
+
+  static async getProductCount(req, res, next) {
+    const productCount = await Product.countDocuments();
+
+    if (!productCount) {
+      return res.status(500).json({
+        error: 'Cant fetch product count',
+        success: false,
+        body: null,
+      });
+    }
+
+    res.status(200).json({
+      error: null,
+      success: true,
+      body: { productCount },
+    });
+  }
+
+  static async getFeaturedProducts(req, res, next) {
+    const count = req.params.count ? req.params.count : 0;
+
+    const products = await Product.find({ isFeatured: true }).limit(+count);
+
+    if (!products) {
+      return res.status(500).json({
+        error: 'Cant fetch featured products',
+        success: false,
+        body: null,
+      });
+    }
+
+    res.status(200).json({
+      error: null,
+      success: true,
+      body: { products },
+    });
+  }
+
+  static async updateProductById(req, res, next) {
+    const id = req.params.id;
+    if (!id) return;
+
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid product id',
+        success: false,
+        body: null,
+      });
+
+    const category = await Category.findById(req.body.category);
+    if (!category)
+      return res.status(400).json({
+        error: 'invalid category',
+        success: false,
+        body: null,
+      });
+
+    const product = await Product.findByIdAndUpdate(
+      id,
+      {
+        name: req.body.name,
+        description: req.body.description,
+        richDescription: req.body.richDescription,
+        image: req.body.image,
+        brand: req.body.brand,
+        price: req.body.price,
+        category: req.body.category,
+        countInStock: req.body.countInStock,
+        rating: req.body.rating,
+        numReviews: req.body.numReviews,
+        isFeatured: req.body.isFeatured,
+      },
+      { new: true }
+    );
+
+    if (!product)
+      return res.status(500).json({
+        error: 'the product cannot be updated',
+        success: false,
+        body: null,
+      });
+
+    res.json({
+      error: null,
+      success: true,
+      body: product,
+    });
+  }
+
+  static async deleteProductById(req, res, next) {
+    const id = req.params.id;
+    if (!id) return;
+
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid product id',
+        success: false,
+        body: null,
+      });
+
+    try {
+      const product = await Product.findByIdAndRemove(id);
+      if (!product) {
+        return res.status(404).json({
+          error: 'product not found',
+          success: false,
+          body: nulll,
+        });
+      }
+
+      return res.status(200).json({
+        error: null,
+        success: true,
+        body: 'product is deletd',
+      });
+    } catch (error) {
+      return res.status(500).json({
+        error,
+        success: false,
+        body: null,
+      });
+    }
   }
 }
 

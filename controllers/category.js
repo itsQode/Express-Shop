@@ -43,6 +43,13 @@ class CategoryController {
     const id = req.params.id;
     if (!id) return;
 
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid category id',
+        success: false,
+        body: null,
+      });
+
     try {
       const category = await Category.findById(id);
 
@@ -72,11 +79,18 @@ class CategoryController {
     const id = req.params.id;
     if (!id) return;
 
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid category id',
+        success: false,
+        body: null,
+      });
+
     const category = await Category.findByIdAndUpdate(
       id,
       {
         name: req.body.name,
-        icon: req.body.icon,
+        icon: req.body.icon || category.icon,
         color: req.body.color,
       },
       { new: true }
@@ -99,6 +113,13 @@ class CategoryController {
   static async deleteCategory(req, res, next) {
     const id = req.params.id;
     if (!id) return;
+
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid category id',
+        success: false,
+        body: null,
+      });
 
     try {
       const category = await Category.findByIdAndRemove(id);
