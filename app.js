@@ -1,34 +1,31 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv/config');
 
-const api = process.env.API_URL;
-
 const app = express();
+
+app.use(cors());
+app.options('*', cors);
 
 //MiddleWares
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use();
 
-app.get(`${api}/products`, (req, res, next) => {
-  const product = {
-    id: 1,
-    name: 'hair dresser',
-    image: 'some_url',
-  };
-  res.json(product);
-});
+//Routes
+const productRoutes = require('./routes/product');
+const orderRoutes = require('./routes/order');
+const userRoutes = require('./routes/user');
+const categoryRoutes = require('./routes/category');
 
-app.post(`${api}/products`, (req, res, next) => {
-  const newProduct = req.body;
-  const product = {
-    id: newProduct.id,
-    name: newProduct.name,
-    image: newProduct.image,
-  };
-  res.json(product);
-});
+const api = process.env.API_URL;
+
+app.use(`${api}/products`, productRoutes);
+app.use(`${api}/orders`, orderRoutes);
+app.use(`${api}/users`, userRoutes);
+app.use(`${api}/categories`, categoryRoutes);
 
 mongoose
   .connect(process.env.CONNECTION_STRING, {
