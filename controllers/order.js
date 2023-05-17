@@ -20,12 +20,12 @@ class OrderController {
   }
 
   static async createOrder(req, res, next) {
-    const product = new Order({
+    const category = new Order({
       name: req.body.name,
       image: req.body.image,
     });
 
-    product
+    category
       .save()
       .then((createdOrder) => {
         return res.status(201).json({
