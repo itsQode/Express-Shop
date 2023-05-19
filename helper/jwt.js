@@ -1,0 +1,25 @@
+const { expressjwt: expressJwt } = require('express-jwt');
+
+function jwt() {
+  const secret = process.env.JWT_TOKEN_STRING;
+  const api = process.env.API_URL;
+
+  return expressJwt({
+    secret,
+    algorithms: ['HS256'],
+    isRevoked: isRevoked,
+  }).unless({
+    path: [
+      { url: /\/api\/v1\/products(.*)/, method: ['GET', 'OPTIONS'] },
+      { url: /\/api\/v1\/categories(.*)/, method: ['GET', 'OPTIONS'] },
+      `${api}/users/login`,
+      `${api}/users/register`,
+    ],
+  });
+}
+
+async function isRevoked(req, { payload }) {
+  return !payload.isAdmin;
+}
+
+module.exports = jwt;

@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv/config');
 
+const jwt = require('./helper/jwt');
+const errorHandler = require('./helper/error-handler');
+
 const app = express();
 
 app.use(cors());
@@ -12,6 +15,8 @@ app.options('*', cors);
 //MiddleWares
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(jwt());
+app.use(errorHandler);
 
 //Routes
 const productRoutes = require('./routes/product');
