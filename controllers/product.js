@@ -6,6 +6,14 @@ class ProductContorller {
   static async createProduct(req, res, next) {
     const category = await Category.findById(req.body.category);
 
+    const file = req.file;
+    if (!file)
+      return res.status(400).json({
+        error: 'No image in the request',
+        success: false,
+        body: null,
+      });
+
     if (!category)
       return res.status(404).json({
         error: 'Invalid category',
@@ -13,11 +21,14 @@ class ProductContorller {
         body: null,
       });
 
+    const fileName = req.file.filename;
+    const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+
     let product = new Product({
       name: req.body.name,
       description: req.body.description,
       richDescription: req.body.richDescription,
-      image: req.body.image,
+      image: `${basePath}${fileName}`,
       brand: req.body.brand,
       price: req.body.price,
       category: req.body.category,
@@ -158,13 +169,32 @@ class ProductContorller {
         body: null,
       });
 
-    const product = await Product.findByIdAndUpdate(
+    const product = await Product.findById(id);
+    if (!product)
+      return res.status(400).json({
+        error: 'cant fetch product',
+        success: false,
+        body: null,
+      });
+
+    const file = req.file;
+    let imagepath;
+
+    if (file) {
+      const fileName = file.filename;
+      const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+      imagepath = `${basePath}${fileName}`;
+    } else {
+      imagepath = product.image;
+    }
+
+    const updateProduct = await Product.findByIdAndUpdate(
       id,
       {
         name: req.body.name,
         description: req.body.description,
         richDescription: req.body.richDescription,
-        image: req.body.image,
+        image: imagepath,
         brand: req.body.brand,
         price: req.body.price,
         category: req.body.category,
@@ -176,9 +206,52 @@ class ProductContorller {
       { new: true }
     );
 
-    if (!product)
+    if (!updateProduct)
       return res.status(500).json({
         error: 'the product cannot be updated',
+        success: false,
+        body: null,
+      });
+
+    res.json({
+      error: null,
+      success: true,
+      body: updateProduct,
+    });
+  }
+
+  static async updateGalleryImagesById(req, res, next) {
+    const id = req.params.id;
+    if (!id) return;
+
+    if (!mongoose.isValidObjectId(id))
+      return res.status(200).json({
+        error: 'invalid product id',
+        success: false,
+        body: null,
+      });
+
+    const files = req.files;
+    let imagesPaths = [];
+    const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+
+    if (files) {
+      files.map((file) => {
+        imagesPaths.push(`${basePath}${file.filename}`);
+      });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      id,
+      {
+        images: imagesPaths,
+      },
+      { new: true }
+    );
+
+    if (!product)
+      return res.status(500).json({
+        error: 'the product images cannot be updated',
         success: false,
         body: null,
       });
