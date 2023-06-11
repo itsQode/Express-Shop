@@ -1,4 +1,5 @@
 const { Category } = require('../models/category');
+const mongoose = require('mongoose');
 
 class CategoryController {
   static async createCategory(req, res, next) {
@@ -112,6 +113,7 @@ class CategoryController {
 
   static async deleteCategory(req, res, next) {
     const id = req.params.id;
+    console.log(id);
     if (!id) return;
 
     if (!mongoose.isValidObjectId(id))
@@ -127,7 +129,7 @@ class CategoryController {
         return res.status(404).json({
           error: 'category not found',
           success: false,
-          body: nulll,
+          body: null,
         });
       }
 

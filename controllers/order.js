@@ -150,6 +150,19 @@ class OrderController {
     });
   }
 
+  static async getCount(req, res, next) {
+    const orderCount = await Order.countDocuments();
+
+    if (!orderCount) {
+      res.status(500).json({ error: 'Internal Error', success: false, body: null });
+    }
+    res.send({
+      error: null,
+      success: true,
+      body: orderCount,
+    });
+  }
+
   static async updateCategoryById(req, res, next) {
     const id = req.params.id;
     if (!id) return;
