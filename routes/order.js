@@ -10,6 +10,8 @@ router.get('/:id', OrderController.getOrderById);
 
 router.get('/get/totalsales', OrderController.getTotalSales);
 
+router.get('/get/count', OrderController.getCount);
+
 router.get('/get/userorders/:userid', OrderController.getUserOrderList);
 
 router.put('/:id', OrderController.updateCategoryById);

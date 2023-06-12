@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const { Category } = require('../models/category');
 
 class CategoryController {
@@ -51,7 +53,9 @@ class CategoryController {
       });
 
     try {
+      console.log('ghable');
       const category = await Category.findById(id);
+      console.log('baad');
 
       if (!category) {
         return res.status(404).json({

@@ -1,7 +1,7 @@
 {
   "name": "eshop",
-  "version": "1.0.0",
-  "description": "backedn of the eshop",
+  "version": "1.0.3",
+  "description": "backend of the eshop",
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",

@@ -4,6 +4,15 @@ const mongoose = require('mongoose');
 
 class ProductContorller {
   static async createProduct(req, res, next) {
+    const id = req.body.category;
+
+    if (!mongoose.isValidObjectId(id))
+      return res.status(404).json({
+        error: 'invalid category id',
+        success: false,
+        body: null,
+      });
+
     const category = await Category.findById(req.body.category);
 
     const file = req.file;
@@ -126,7 +135,7 @@ class ProductContorller {
     res.status(200).json({
       error: null,
       success: true,
-      body: { productCount },
+      body: productCount,
     });
   }
 
@@ -268,7 +277,7 @@ class ProductContorller {
     if (!id) return;
 
     if (!mongoose.isValidObjectId(id))
-      return res.status(200).json({
+      return res.status(400).json({
         error: 'invalid product id',
         success: false,
         body: null,

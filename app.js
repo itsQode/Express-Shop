@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv/config');
 
+mongoose.set('strictQuery', false);
+
 const jwt = require('./helper/jwt');
 const errorHandler = require('./helper/error-handler');
 
@@ -32,17 +34,24 @@ app.use(`${api}/orders`, orderRoutes);
 app.use(`${api}/users`, userRoutes);
 app.use(`${api}/categories`, categoryRoutes);
 
+//Database
 mongoose
   .connect(process.env.CONNECTION_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
     dbName: 'eshop-database',
   })
   .then(() => {
-    console.log('Database connection is ready...');
+    console.log('Database Connection is ready on eshopDB');
   })
   .catch((err) => {
     console.log(err);
+    process.exit(1);
   });
 
-app.listen(3000, () => {
-  console.log('serves is running http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+
+//Server
+app.listen(PORT, () => {
+  console.log('server is running');
 });
